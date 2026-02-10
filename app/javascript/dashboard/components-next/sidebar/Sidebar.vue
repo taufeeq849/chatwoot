@@ -244,6 +244,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('conversation_unattended'),
         },
         {
+          name: 'Ticket Board',
+          activeOn: ['ticket_board'],
+          label: t('SIDEBAR.TICKET_BOARD'),
+          to: accountScopedRoute('ticket_board'),
+        },
+        {
           name: 'Folders',
           label: t('SIDEBAR.CUSTOM_VIEWS_FOLDER'),
           icon: 'i-lucide-folder',

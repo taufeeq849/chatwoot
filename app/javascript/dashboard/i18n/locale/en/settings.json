@@ -381,7 +381,24 @@
     "DOCS": "Read docs",
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
-    "CONVERSATION_WORKFLOW": "Conversation Workflow"
+    "CONVERSATION_WORKFLOW": "Conversation Workflow",
+    "TICKET_BOARD": "Ticket Board"
+  },
+  "TICKET_BOARD": {
+    "TITLE": "Ticket Board",
+    "UNASSIGNED": "Unassigned",
+    "IN_PROGRESS": "In Progress",
+    "RESOLVED": "Resolved",
+    "NO_CONVERSATIONS": "No conversations",
+    "UNKNOWN_CONTACT": "Unknown Contact",
+    "OPEN_FULL_CONVERSATION": "Open Full Conversation",
+    "STATUS": "Status",
+    "ASSIGNEE": "Assignee",
+    "UNASSIGNED_LABEL": "Unassigned",
+    "LAST_UPDATED": "Updated",
+    "LAST_MESSAGE": "Last Message",
+    "NO_MESSAGES": "No messages yet",
+    "CLOSE_PANEL": "Close conversation"
   },
   "CAPTAIN_SETTINGS": {
     "TITLE": "Captain Settings",

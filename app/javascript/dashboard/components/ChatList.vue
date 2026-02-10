@@ -1,15 +1,7 @@
 <script setup>
 // [TODO] This componet is too big and bulky to be in the same file, we can consider splitting this into multiple
 // composables and components, useVirtualChatList, useChatlistFilters
-import {
-  ref,
-  unref,
-  provide,
-  computed,
-  watch,
-  onMounted,
-  defineEmits,
-} from 'vue';
+import { ref, unref, provide, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -38,6 +30,7 @@ import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAlert } from 'dashboard/composables';
 import { useChatListKeyboardEvents } from 'dashboard/composables/chatlist/useChatListKeyboardEvents';
 import { useBulkActions } from 'dashboard/composables/chatlist/useBulkActions';
+import { useConversationActions } from 'dashboard/composables/useConversationActions';
 import { useFilter } from 'shared/composables/useFilter';
 import { useTrack } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
@@ -148,6 +141,7 @@ const {
   onAssignTeamsForBulk,
   onUpdateConversations,
 } = useBulkActions();
+const conversationActions = useConversationActions();
 
 const {
   initializeStatusAndAssigneeFilterToModal,
@@ -680,59 +674,24 @@ function redirectToConversationList() {
 }
 
 async function assignPriority(priority, conversationId = null) {
-  store.dispatch('setCurrentChatPriority', {
-    priority,
-    conversationId,
-  });
-  store.dispatch('assignPriority', { conversationId, priority }).then(() => {
-    useTrack(CONVERSATION_EVENTS.CHANGE_PRIORITY, {
-      newValue: priority,
-      from: 'Context menu',
-    });
-    useAlert(
-      t('CONVERSATION.PRIORITY.CHANGE_PRIORITY.SUCCESSFUL', {
-        priority,
-        conversationId,
-      })
-    );
+  store.dispatch('setCurrentChatPriority', { priority, conversationId });
+  await conversationActions.assignPriority(priority, conversationId);
+  useTrack(CONVERSATION_EVENTS.CHANGE_PRIORITY, {
+    newValue: priority,
+    from: 'Context menu',
   });
 }
 
 async function markAsUnread(conversationId) {
-  try {
-    await store.dispatch('markMessagesUnread', {
-      id: conversationId,
-    });
-    redirectToConversationList();
-  } catch (error) {
-    // Ignore error
-  }
+  await conversationActions.markAsUnread(conversationId);
+  redirectToConversationList();
 }
 async function markAsRead(conversationId) {
-  try {
-    await store.dispatch('markMessagesRead', {
-      id: conversationId,
-    });
-  } catch (error) {
-    // Ignore error
-  }
+  await conversationActions.markAsRead(conversationId);
 }
 
 async function onAssignTeam(team, conversationId = null) {
-  try {
-    await store.dispatch('assignTeam', {
-      conversationId,
-      teamId: team.id,
-    });
-    useAlert(
-      t('CONVERSATION.CARD_CONTEXT_MENU.API.TEAM_ASSIGNMENT.SUCCESFUL', {
-        team: team.name,
-        conversationId,
-      })
-    );
-  } catch (error) {
-    useAlert(t('CONVERSATION.CARD_CONTEXT_MENU.API.TEAM_ASSIGNMENT.FAILED'));
-  }
+  await conversationActions.assignTeam(team, conversationId);
 }
 
 function toggleConversationStatus(
@@ -839,11 +798,10 @@ const selectedConversationId = ref(null);
 
 async function deleteConversation() {
   try {
-    await store.dispatch('deleteConversation', selectedConversationId.value);
+    await conversationActions.deleteConversation(selectedConversationId.value);
     redirectToConversationList();
     selectedConversationId.value = null;
     deleteConversationDialogRef.value.close();
-    useAlert(t('CONVERSATION.SUCCESS_DELETE_CONVERSATION'));
   } catch (error) {
     useAlert(t('CONVERSATION.FAIL_DELETE_CONVERSATION'));
   }

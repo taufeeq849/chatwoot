@@ -1,6 +1,7 @@
 /* eslint arrow-body-style: 0 */
 import { frontendURL } from '../../../helper/URLHelper';
 import ConversationView from './ConversationView.vue';
+import TicketBoardView from './TicketBoardView.vue';
 
 const CONVERSATION_PERMISSIONS = [
   'administrator',
@@ -198,6 +199,14 @@ export default {
         conversationId: route.params.conversationId,
         conversationType: 'participating',
       }),
+    },
+    {
+      path: frontendURL('accounts/:accountId/tickets/board'),
+      name: 'ticket_board',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: TicketBoardView,
     },
   ],
 };
