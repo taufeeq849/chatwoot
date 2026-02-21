@@ -675,11 +675,16 @@ function redirectToConversationList() {
 
 async function assignPriority(priority, conversationId = null) {
   store.dispatch('setCurrentChatPriority', { priority, conversationId });
-  await conversationActions.assignPriority(priority, conversationId);
-  useTrack(CONVERSATION_EVENTS.CHANGE_PRIORITY, {
-    newValue: priority,
-    from: 'Context menu',
-  });
+  const success = await conversationActions.assignPriority(
+    priority,
+    conversationId
+  );
+  if (success) {
+    useTrack(CONVERSATION_EVENTS.CHANGE_PRIORITY, {
+      newValue: priority,
+      from: 'Context menu',
+    });
+  }
 }
 
 async function markAsUnread(conversationId) {
@@ -797,13 +802,13 @@ const deleteConversationDialogRef = ref(null);
 const selectedConversationId = ref(null);
 
 async function deleteConversation() {
-  try {
-    await conversationActions.deleteConversation(selectedConversationId.value);
+  const success = await conversationActions.deleteConversation(
+    selectedConversationId.value
+  );
+  if (success) {
     redirectToConversationList();
     selectedConversationId.value = null;
     deleteConversationDialogRef.value.close();
-  } catch (error) {
-    useAlert(t('CONVERSATION.FAIL_DELETE_CONVERSATION'));
   }
 }
 

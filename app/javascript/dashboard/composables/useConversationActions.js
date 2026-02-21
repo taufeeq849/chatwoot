@@ -89,8 +89,10 @@ export function useConversationActions() {
           conversationId,
         })
       );
+      return true;
     } catch {
       useAlert(t('CONVERSATION.PRIORITY.CHANGE_PRIORITY.FAILED'));
+      return false;
     }
   };
 
@@ -111,8 +113,14 @@ export function useConversationActions() {
   };
 
   const deleteConversation = async conversationId => {
-    await store.dispatch('deleteConversation', conversationId);
-    useAlert(t('CONVERSATION.SUCCESS_DELETE_CONVERSATION'));
+    try {
+      await store.dispatch('deleteConversation', conversationId);
+      useAlert(t('CONVERSATION.SUCCESS_DELETE_CONVERSATION'));
+      return true;
+    } catch {
+      useAlert(t('CONVERSATION.FAIL_DELETE_CONVERSATION'));
+      return false;
+    }
   };
 
   return {
