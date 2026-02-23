@@ -4,6 +4,7 @@ import { useTimeoutFn } from '@vueuse/core';
 import { provideMessageContext } from './provider.js';
 import { useTrack } from 'dashboard/composables';
 import { useMapGetter } from 'dashboard/composables/store';
+import { useMessageSelection } from 'dashboard/composables/useMessageSelection';
 import { emitter } from 'shared/helpers/mitt';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -135,6 +136,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['retry']);
+
+const { isSelectMode, selectedMessageIds, toggleMessageSelection } =
+  useMessageSelection();
+
+const isSelected = computed(() => selectedMessageIds.value.has(props.id));
 
 const contextMenuPosition = ref({});
 const showBackgroundHighlight = ref(false);
@@ -399,7 +405,17 @@ const shouldRenderMessage = computed(() => {
   );
 });
 
+function handleSelectClick() {
+  toggleMessageSelection(props.id);
+}
+
 function openContextMenu(e) {
+  if (isSelectMode.value) {
+    e.preventDefault();
+    toggleMessageSelection(props.id);
+    return;
+  }
+
   const shouldSkipContextMenu =
     e.target?.classList.contains('skip-context-menu') ||
     ['a', 'img'].includes(e.target?.tagName.toLowerCase());
@@ -513,10 +529,28 @@ provideMessageContext({
       flexOrientationClass,
       {
         'group-with-next': shouldGroupWithNext,
-        'bg-n-alpha-1': showBackgroundHighlight,
+        'bg-n-alpha-1': showBackgroundHighlight || isSelected,
+        'cursor-pointer': isSelectMode,
       },
     ]"
+    @click="isSelectMode && handleSelectClick()"
   >
+    <div
+      v-if="isSelectMode"
+      class="flex items-center px-2 shrink-0"
+      @click.stop="handleSelectClick"
+    >
+      <div
+        class="flex items-center justify-center w-5 h-5 border rounded"
+        :class="
+          isSelected
+            ? 'bg-n-brand border-n-brand text-white'
+            : 'border-n-strong bg-n-background'
+        "
+      >
+        <span v-if="isSelected" class="i-lucide-check text-xs" />
+      </div>
+    </div>
     <div v-if="variant === MESSAGE_VARIANTS.ACTIVITY">
       <ActivityBubble :content="content" />
     </div>

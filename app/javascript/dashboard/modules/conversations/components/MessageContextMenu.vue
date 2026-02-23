@@ -14,6 +14,7 @@ import {
 import MenuItem from '../../../components/widgets/conversation/contextMenu/menuItem.vue';
 import { useTrack } from 'dashboard/composables';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import { useMessageSelection } from 'dashboard/composables/useMessageSelection';
 
 export default {
   components: {
@@ -47,9 +48,12 @@ export default {
   emits: ['open', 'close', 'replyTo'],
   setup() {
     const { getPlainText } = useMessageFormatter();
+    const { isSelectMode, toggleSelectMode } = useMessageSelection();
 
     return {
       getPlainText,
+      isSelectMode,
+      toggleSelectMode,
     };
   },
   data() {
@@ -131,6 +135,10 @@ export default {
     },
     handleReplyTo() {
       this.$emit('replyTo', this.message);
+      this.handleClose();
+    },
+    handleSelectMessages() {
+      this.toggleSelectMode();
       this.handleClose();
     },
     openDeleteModal() {
@@ -242,6 +250,16 @@ export default {
           }"
           variant="icon"
           @click.stop="showCannedResponseModal"
+        />
+        <hr />
+        <MenuItem
+          v-if="!isSelectMode"
+          :option="{
+            icon: 'checkmark-circle',
+            label: $t('CONVERSATION.CONTEXT_MENU.SELECT_MESSAGES'),
+          }"
+          variant="icon"
+          @click.stop="handleSelectMessages"
         />
         <hr v-if="enabledOptions['delete']" />
         <MenuItem

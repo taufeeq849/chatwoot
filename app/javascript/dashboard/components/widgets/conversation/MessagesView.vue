@@ -3,6 +3,7 @@ import { ref, provide } from 'vue';
 // composable
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useLabelSuggestions } from 'dashboard/composables/useLabelSuggestions';
+import { useMessageSelection } from 'dashboard/composables/useMessageSelection';
 import { useSnakeCase } from 'dashboard/composables/useTransformKeys';
 
 // components
@@ -49,9 +50,20 @@ export default {
     const isPopOutReplyBox = ref(false);
     const conversationPanelRef = ref(null);
 
+    const {
+      isSelectMode,
+      exitSelectMode,
+      registerMessagesGetter,
+      resetSelectionState,
+    } = useMessageSelection();
+
     const keyboardEvents = {
       Escape: {
         action: () => {
+          if (isSelectMode.value) {
+            exitSelectMode();
+            return;
+          }
           isPopOutReplyBox.value = false;
         },
       },
@@ -69,6 +81,10 @@ export default {
 
     return {
       isPopOutReplyBox,
+      isSelectMode,
+      exitSelectMode,
+      registerMessagesGetter,
+      resetSelectionState,
       captainTasksEnabled,
       getLabelSuggestions,
       isLabelSuggestionFeatureEnabled,
@@ -251,6 +267,7 @@ export default {
       if (newChat.id === oldChat.id) {
         return;
       }
+      this.exitSelectMode();
       this.fetchAllAttachmentsFromCurrentChat();
       this.fetchSuggestions();
       this.messageSentSinceOpened = false;
@@ -267,12 +284,14 @@ export default {
   },
 
   mounted() {
+    this.registerMessagesGetter(() => this.getMessages);
     this.addScrollListener();
     this.fetchAllAttachmentsFromCurrentChat();
     this.fetchSuggestions();
   },
 
   unmounted() {
+    this.resetSelectionState();
     this.removeBusListeners();
     this.removeScrollListener();
   },
