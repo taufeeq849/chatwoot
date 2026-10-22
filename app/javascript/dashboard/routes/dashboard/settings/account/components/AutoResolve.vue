@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useAlert } from 'dashboard/composables';
 import WithLabel from 'v3/components/Form/WithLabel.vue';
-import TextArea from 'next/textarea/TextArea.vue';
+import Editor from 'next/Editor/Editor.vue';
 import Switch from 'next/switch/Switch.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import DurationInput from 'next/input/DurationInput.vue';
@@ -13,6 +13,7 @@ import SingleSelect from 'dashboard/components-next/filter/inputs/SingleSelect.v
 import { DURATION_UNITS } from 'dashboard/components-next/input/constants';
 
 const { t } = useI18n();
+const minDuration = window.chatwootConfig?.autoResolveMinMinutes || 10;
 const duration = ref(0);
 const unit = ref(DURATION_UNITS.MINUTES);
 const message = ref('');
@@ -93,8 +94,10 @@ const updateAccountSettings = async settings => {
 };
 
 const handleSubmit = async () => {
-  if (duration.value < 10) {
-    useAlert(t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.DURATION.ERROR'));
+  if (duration.value < minDuration) {
+    useAlert(
+      t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.DURATION.ERROR', { minDuration })
+    );
     return Promise.resolve();
   }
 
@@ -129,14 +132,14 @@ const toggleAutoResolve = async () => {
   >
     <div class="flex flex-col gap-2 items-start px-5 py-4">
       <div class="flex justify-between items-center w-full">
-        <h3 class="text-base font-medium text-n-slate-12">
+        <h3 class="text-heading-2 text-n-slate-12">
           {{ t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.TITLE') }}
         </h3>
         <div class="flex justify-end">
           <Switch v-model="isEnabled" @change="toggleAutoResolve" />
         </div>
       </div>
-      <p class="mb-0 text-sm text-n-slate-11">
+      <p class="mb-0 text-body-para text-n-slate-11">
         {{ t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.NOTE') }}
       </p>
     </div>
@@ -162,9 +165,13 @@ const toggleAutoResolve = async () => {
           :label="t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.MESSAGE.LABEL')"
           :help-message="t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.MESSAGE.HELP')"
         >
-          <TextArea
+          <Editor
             v-model="message"
             class="w-full"
+            channel-type="Context::NoToolbar"
+            enable-variables
+            :enable-canned-responses="false"
+            :show-character-count="false"
             :placeholder="
               t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.MESSAGE.PLACEHOLDER')
             "

@@ -3,7 +3,7 @@ class Captain::Tools::SearchReplyDocumentationService < RubyLLM::Tool
 
   description 'Search and retrieve documentation/FAQs from knowledge base'
 
-  param :query, desc: 'Search Query', required: true
+  parameter :query, description: 'Search Query', required: true
 
   def initialize(account:, assistant: nil)
     @account = account
@@ -18,7 +18,11 @@ class Captain::Tools::SearchReplyDocumentationService < RubyLLM::Tool
   def execute(query:)
     Rails.logger.info { "#{self.class.name}: #{query}" }
 
-    responses = search_responses(query)
+    translated_query = Captain::Llm::TranslateQueryService
+                       .new(account: @account)
+                       .translate(query, target_language: @account.locale_english_name)
+
+    responses = search_responses(translated_query)
     return 'No FAQs found for the given query' if responses.empty?
 
     responses.map { |response| format_response(response) }.join
