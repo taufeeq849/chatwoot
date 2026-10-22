@@ -2,7 +2,7 @@ version: '3'
 
 services:
   base: &base
-    image: chatwoot/chatwoot:latest
+    image: mtaufeeqrazak/trackmatic:v1.0.0
     env_file: .env ## Change this file for customized env variables
     volumes:
       - storage_data:/app/storage
